@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TDesign Vue Chat - Vue 2.7 Example</title>
+  <link rel="stylesheet" href="https://unpkg.com/tdesign-vue@latest/dist/tdesign.min.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    #app {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+    }
+    .chat-container {
+      height: 500px;
+      display: flex;
+      flex-direction: column;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <h1>TDesign Vue Chat - Vue 2.7 示例</h1>
+    <div class="chat-container">
+      <t-chat :data="chatData" @clear="handleClear" reverse>
+        <template #actions="{ item, index }">
+          <t-chat-action 
+            :content="item.content" 
+            operation-btn="copy,good,bad"
+            @operation="(type) => handleOperation(type, index)"
+          />
+        </template>
+      </t-chat>
+      <t-chat-sender
+        v-model="inputValue"
+        placeholder="请输入消息..."
+        :loading="loading"
+        @send="handleSend"
+        @stop="handleStop"
+      />
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/vue@2.7.16/dist/vue.js"></script>
+  <script src="https://unpkg.com/tdesign-vue@latest/dist/tdesign.min.js"></script>
+  <script src="../dist/jump-mp-td-chat.min.js"></script>
+  
+  <script>
+    new Vue({
+      el: '#app',
+      data: {
+        inputValue: '',
+        loading: false,
+        chatData: [
+          {
+            role: 'user',
+            content: '你好，请介绍一下自己',
+            avatar: 'https://tdesign.gtimg.com/site/avatar.jpg',
+            name: '用户',
+            datetime: '2024-01-15 10:00',
+          },
+          {
+            role: 'assistant',
+            content: '你好！我是一个AI助手，可以帮助你回答问题、进行对话、协助写作等多种任务。有什么我可以帮你的吗？',
+            name: 'AI助手',
+            datetime: '2024-01-15 10:01',
+          },
+        ],
+      },
+      methods: {
+        handleSend(value) {
+          console.log('发送消息:', value);
+          this.chatData.push({
+            role: 'user',
+            content: value,
+            avatar: 'https://tdesign.gtimg.com/site/avatar.jpg',
+            name: '用户',
+            datetime: new Date().toLocaleString(),
+          });
+          this.inputValue = '';
+          this.loading = true;
+          
+          // 模拟AI回复
+          setTimeout(() => {
+            this.chatData.push({
+              role: 'assistant',
+              content: '收到你的消息：' + value + '\n\n这是一个模拟的回复。在实际应用中，这里会调用AI接口获取回复内容。',
+              name: 'AI助手',
+              datetime: new Date().toLocaleString(),
+            });
+            this.loading = false;
+          }, 2000);
+        },
+        handleStop() {
+          console.log('停止生成');
+          this.loading = false;
+        },
+        handleClear() {
+          console.log('清空历史');
+          this.chatData = [];
+        },
+        handleOperation(type, index) {
+          console.log('操作:', type, '索引:', index);
+          this.$message.success(`执行了 ${type} 操作`);
+        },
+      },
+    });
+  </script>
+</body>
+</html>
