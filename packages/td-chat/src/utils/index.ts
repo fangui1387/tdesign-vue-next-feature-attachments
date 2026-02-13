@@ -32,31 +32,18 @@ export class MessagePluginSingleton {
 }
 
 // withInstall 工具函数
-export function withInstall<T>(component: T) {
+export function withInstall<T>(component: T, name?: string) {
   const comp = component as any;
   comp.install = function(Vue: typeof import('vue'), config?: Record<string, unknown>) {
-    Vue.component(comp.name, comp);
+    const componentName = name || comp.name;
+    Vue.component(componentName, comp);
   };
   return comp as T & { install: (Vue: typeof import('vue'), config?: Record<string, unknown>) => void };
 }
 
-// Helpers
-export const isAIMessage = (item: { role: string }) => {
-  return item?.role === 'assistant' || item?.role === 'model';
-};
-
-export const getMessageContentForCopy = (item: { content: any }) => {
-  if (typeof item.content === 'string') return item.content;
-  if (Array.isArray(item.content)) {
-    return item.content
-      .map((segment) => {
-        if (typeof segment === 'string') return segment;
-        if (segment.type === 'text') return segment.data;
-        // Skip reasoning/toolcalls for simple copy? Or stringify them?
-        // Demo seems to expect simple text.
-        return '';
-      })
-      .join('');
-  }
-  return '';
-};
+// Re-export from types to avoid duplication
+export {
+  isAIMessage,
+  isToolCallContent,
+  getMessageContentForCopy,
+} from '../types';

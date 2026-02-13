@@ -11,11 +11,15 @@ export default {
     type: String,
     default: '',
   },
-  /** 输入框左下角区域扩展 */
+  /** 输入框左下角区域扩展（推荐使用） */
+  footerPrefix: {
+    type: [String, Function] as PropType<TdChatSenderProps['footerPrefix']>,
+  },
+  /** 输入框左下角区域扩展（兼容旧版本）@deprecated */
   prefix: {
     type: [String, Function] as PropType<TdChatSenderProps['prefix']>,
   },
-  /** 发送按钮是否处于加载状态，待废弃，请尽快使用 loading 替换 */
+  /** 发送按钮是否处于加载状态，待废弃，请尽快使用 loading 替换 @deprecated */
   stopDisabled: {
     type: Boolean as PropType<TdChatSenderProps['stopDisabled']>,
     default: false,
@@ -32,6 +36,10 @@ export default {
   /** 透传给 Textarea 组件的全部属性 */
   textareaProps: {
     type: Object as PropType<TdChatSenderProps['textareaProps']>,
+  },
+  /** 附件配置属性 */
+  attachmentsProps: {
+    type: Object as PropType<TdChatSenderProps['attachmentsProps']>,
   },
   /** 输入框的值 */
   value: {

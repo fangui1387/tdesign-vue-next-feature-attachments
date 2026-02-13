@@ -32,9 +32,9 @@
           <chat-reasoning
             v-if="isObjectReasoning && roleValue === 'assistant'"
             :role="roleValue"
-            :expand-icon-placement="reasoning.expandIconPlacement"
-            @expand-change="reasoning.onExpandChange"
-            :collapse-panel-props="reasoning.collapsePanelProps"
+            :expand-icon-placement="reasoningValue.expandIconPlacement"
+            @expand-change="reasoningValue.onExpandChange"
+            :collapse-panel-props="reasoningValue.collapsePanelProps"
           />
           <!-- String Reasoning -->
           <chat-reasoning
@@ -47,11 +47,12 @@
           <!-- Content -->
           <chat-content
             v-if="isStringContent"
-            :content="content"
+            :content="contentValue"
             :role="roleValue"
+            :status="status"
             :is-normal-text="false"
           />
-          <t-node v-else :content="content" />
+          <t-node v-else :content="contentValue" />
         </div>
 
         <!-- Actions -->
@@ -86,13 +87,7 @@ export default Vue.extend({
     TSkeleton,
     TNode,
   },
-  props: {
-    ...props,
-    reasoningLoading: {
-      type: Boolean,
-      default: false,
-    },
-  },
+  props,
   provide() {
     return {
       getRole: () => (this as any).roleValue,
@@ -124,11 +119,11 @@ export default Vue.extend({
     avatar(): any {
       return useTNodeJSX(this)('avatar', { slotFirst: true }) || (this as any).$props.avatar;
     },
-    content(): any {
+    contentValue(): any {
       return useTNodeJSX(this)('content', { slotFirst: true }) || (this as any).$props.content;
     },
     showActions(): any {
-      return useTNodeJSX(this)('actions');
+      return useTNodeJSX(this)('actionbar') || useTNodeJSX(this)('actions');
     },
     showNameDatetime(): boolean {
       return !!((this as any).name || (this as any).datetime);
@@ -142,8 +137,16 @@ export default Vue.extend({
     isStringAvatar(): boolean {
       return isString((this as any).avatar);
     },
+    reasoningValue(): any {
+      const reasoning = (this as any).reasoning;
+      if (isObject(reasoning) && reasoning !== true) {
+        return reasoning;
+      }
+      return {};
+    },
     isObjectReasoning(): boolean {
-      return isObject((this as any).reasoning) && (this as any).reasoning !== true;
+      const reasoning = (this as any).reasoning;
+      return isObject(reasoning) && reasoning !== true;
     },
     isStringReasoning(): boolean {
       return isString((this as any).reasoning);
@@ -157,7 +160,7 @@ export default Vue.extend({
       };
     },
     isStringContent(): boolean {
-      return isString((this as any).content);
+      return isString((this as any).contentValue);
     },
   },
   methods: {

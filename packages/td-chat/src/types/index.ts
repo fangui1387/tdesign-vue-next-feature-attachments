@@ -1,7 +1,7 @@
 /* eslint-disable */
 
 /**
- * Chat 组件类型定义
+ * 该文件为脚本自动生成文件，请勿随意修改。如需修改请联系 PMC
  * 适配 Vue 2.7 版本
  */
 
@@ -14,8 +14,23 @@ export type TNode<T = undefined> = T extends undefined
 export interface TdChatProps {
   /**
    * 自定义操作按钮的插槽
+   * @deprecated
    */
   actions?: TNode;
+  /**
+   * 自定义操作按钮的插槽（推荐使用）
+   */
+  actionbar?: TNode;
+  /**
+   * 是否开启自动滚动
+   * @default true
+   */
+  autoScroll?: boolean;
+  /**
+   * 默认滚动位置
+   * @default 'bottom'
+   */
+  defaultScrollTo?: 'top' | 'bottom';
   /**
    * 动画效果，支持「渐变加载动画」,「闪烁加载动画」, 「骨架屏」三种
    * @default skeleton
@@ -66,6 +81,11 @@ export interface TdChatProps {
    */
   reverse?: boolean;
   /**
+   * 是否显示"回到底部"按钮
+   * @default true
+   */
+  showScrollButton?: boolean;
+  /**
    * 新消息是否处于加载状态，加载状态默认显示骨架屏，接口请求返回数据时请将新消息加载状态置为false
    * @default false
    */
@@ -85,7 +105,7 @@ export interface ChatInstanceFunctions {
   /**
    * 对话列表过长时，支持对话列表重新滚动回底部的方法
    */
-  scrollToBottom?: (params: ScrollToBottomParams) => void;
+  scrollToBottom?: (params?: ScrollToBottomParams) => void;
 }
 
 export interface TdChatLoadingProps {
@@ -104,8 +124,13 @@ export interface TdChatLoadingProps {
 export interface TdChatItemProps {
   /**
    * 自定义的操作内容
+   * @deprecated
    */
   actions?: string | TNode;
+  /**
+   * 自定义的操作内容（推荐使用）
+   */
+  actionbar?: string | TNode;
   /**
    * 动画效果，支持「渐变加载动画」,「闪烁加载动画」, 「骨架屏」三种
    * @default skeleton
@@ -147,26 +172,46 @@ export interface TdChatItemProps {
    */
   variant?: 'base' | 'outline' | 'text';
   /**
+   * 消息状态
+   */
+  status?: '' | 'error';
+  /**
    * 对话框位置
    * @default left
    */
   placement?: 'left' | 'right' | 'center';
-  /**
-   * 透传给 ChatContent 的属性
-   */
-  chatContentProps?: Record<string, any>;
+}
+
+type ChatContentType = 'text' | 'markdown';
+
+export interface ChatContentData {
+  type: ChatContentType;
+  data: any;
 }
 
 export interface TdChatContentProps {
   /**
-   * 聊天内容，支持 markdown 格式
+   * 聊天内容，支持多种内容类型
    * @default ''
    */
-  content?: string;
+  content?: string | ChatContentData;
   /**
    * 角色，不同选项配置不同的样式，支持类型包括用户、助手、错误、模型切换、系统消息
    */
-  role?: 'user' | 'assistant' | 'error' | 'model-change' | 'system';
+  role?: 'user' | 'assistant' | 'model-change' | 'system';
+  /**
+   * Markdown引擎类型，用于解析Markdown内容
+   */
+  markdownProps?: {
+    engine: 'marked' | 'cherry-markdown';
+    options: {
+      [key: string]: any;
+    };
+  };
+  /**
+   * 消息状态
+   */
+  status?: '' | 'error';
 }
 
 export interface TdChatActionProps {
@@ -181,22 +226,40 @@ export interface TdChatActionProps {
    */
   disabled?: boolean;
   /**
-   * 是否点踩
+   * 评价类型，可选值：'good(点赞)'/'bad(点踩)'，默认为空
+   * @default ''
+   */
+  comment?: 'good' | 'bad' | '';
+  /**
+   * 是否点踩（待废弃，请尽快使用comment）
    * @default false
+   * @deprecated
    */
   isBad?: boolean;
   /**
-   * 是否点赞
+   * 是否点赞（待废弃，请尽快使用comment）
    * @default false
+   * @deprecated
    */
   isGood?: boolean;
   /**
    * 操作按钮配置项，可配置操作按钮选项和顺序
    * @default ["replay", "copy", "good", "bad"]
    */
-  operationBtn?: Array<'replay' | 'copy' | 'good' | 'bad'>;
+  actionBar?: Array<'replay' | 'copy' | 'good' | 'bad' | 'share'>;
+  /**
+   * 操作按钮配置项，可配置操作按钮选项和顺序（待废弃，请尽快使用actionBar）
+   * @default ["replay", "copy", "good", "bad"]
+   * @deprecated
+   */
+  operationBtn?: Array<'replay' | 'copy' | 'good' | 'bad' | 'share'>;
   /**
    * 点击点赞，点踩，复制，重新生成按钮时触发
+   */
+  onActions?: (value: string, context: { e: MouseEvent }) => void;
+  /**
+   * 点击点赞，点踩，复制，重新生成按钮时触发（待废弃，请尽快使用onActions）
+   * @deprecated
    */
   onOperation?: (value: string, context: { e: MouseEvent }) => void;
 }
@@ -282,7 +345,7 @@ export interface TdChatSenderProps {
   /**
    * 输入框左下角区域扩展
    */
-  prefix?: string | TNode;
+  footerPrefix?: string | TNode;
   /**
    * 发送按钮是否处于加载状态，待废弃，请尽快使用 loading 替换
    * @deprecated
@@ -336,6 +399,13 @@ export interface TdChatSenderProps {
    * 点击消息终止的回调方法
    */
   onStop?: (value: string, context: { e: MouseEvent }) => void;
+  /**
+   * 附件配置属性
+   */
+  attachmentsProps?: {
+    items: any[];
+    overflow: 'scrollX' | 'scrollY' | 'wrap';
+  };
 }
 
 export interface TdChatReasoningProps {
@@ -364,11 +434,18 @@ export interface TdChatReasoningProps {
    * 展开图标点击事件
    */
   onExpandChange?: (value: boolean) => void;
-
   /**
    * 是否折叠
    */
   collapsed?: boolean;
+  /**
+   * 布局方式
+   */
+  layout?: 'border' | 'block';
+  /**
+   * 加载过程动画
+   */
+  animation?: 'moving' | 'gradient' | 'circle';
 }
 
 export interface TdChatItemMeta {
@@ -377,6 +454,7 @@ export interface TdChatItemMeta {
   role?: string;
   datetime?: string;
   content?: string;
+  status?: string;
   reasoning?: string;
 }
 
@@ -414,11 +492,43 @@ export interface UploadActionConfig {
    * @param params - 上传参数对象
    * @param params.files - 上传的文件列表
    * @param params.name - 上传动作名称
+   * @param params.e - 事件对象
    */
-  action: (params: { files: File[]; name: UploadActionType }) => void;
+  action: (params: { files: File[]; name: UploadActionType; e?: Event }) => void;
 }
 
-// Added Types for Demo Compatibility
+// Chat Engine Types
+export interface ChatRequestParams {
+  prompt: string;
+  [key: string]: any;
+}
+
+export interface ChatMessagesData {
+  id: string | number;
+  role: string;
+  content: any;
+  status?: 'pending' | 'loading' | 'streaming' | 'complete' | 'error';
+  reasoning?: string;
+  [key: string]: any;
+}
+
+export interface ChatServiceConfig {
+  endpoint: string;
+  onRequest?: (params: ChatRequestParams) => RequestInit | void;
+  onStart?: () => void;
+  onComplete?: (isAbort: boolean, requestParams: RequestInit, response: any) => void;
+  onError?: (error: Error) => void;
+  onAbort?: () => void;
+}
+
+export interface ChatEngine {
+  setMessages: (newMessages: ChatMessagesData[]) => void;
+  clearMessages: () => void;
+  sendUserMessage: (params: ChatRequestParams) => Promise<void>;
+  regenerateAIMessage: () => void;
+  abortChat: () => void;
+}
+
 export interface TdChatMessageConfig {
   user?: Partial<TdChatItemProps> & {
     chatContentProps?: Partial<TdChatContentProps> & Record<string, any>;
@@ -429,20 +539,7 @@ export interface TdChatMessageConfig {
   [key: string]: any;
 }
 
-export interface ChatRequestParams {
-  prompt: string;
-  [key: string]: any;
-}
-
-export interface ChatMessagesData {
-  id: string | number;
-  role: string;
-  content: any; // Can be string or array of segments
-  status?: 'pending' | 'loading' | 'streaming' | 'complete' | 'error';
-  [key: string]: any;
-}
-
-export type TdChatActionsName = 'replay' | 'copy' | 'good' | 'bad';
+export type TdChatActionsName = 'replay' | 'copy' | 'good' | 'bad' | 'share';
 
 export interface TdChatListApi {
   scrollToBottom: (params?: ScrollToBottomParams) => void;
@@ -451,4 +548,79 @@ export interface TdChatListApi {
 export interface TdChatSenderApi {
   focus: () => void;
   blur: () => void;
+}
+
+// ToolCall Types
+export interface ToolCall {
+  id: string;
+  type: 'function';
+  function: {
+    name: string;
+    arguments: string;
+  };
+}
+
+export interface ToolCallContent {
+  type: 'tool-call';
+  toolCall: ToolCall;
+}
+
+export interface ToolCallResult {
+  type: 'tool-result';
+  toolCallId: string;
+  result: any;
+}
+
+export type AIMessageContent = string | ToolCallContent | ToolCallResult | Array<string | ToolCallContent | ToolCallResult>;
+
+export function isToolCallContent(content: any): content is ToolCallContent {
+  return content && typeof content === 'object' && content.type === 'tool-call';
+}
+
+export function isAIMessage(content: any): content is { role: string; content: AIMessageContent } {
+  return content && typeof content === 'object' && content.role === 'assistant';
+}
+
+export function getMessageContentForCopy(content: AIMessageContent): string {
+  if (typeof content === 'string') {
+    return content;
+  }
+  if (Array.isArray(content)) {
+    return content
+      .map((item) => {
+        if (typeof item === 'string') return item;
+        if (isToolCallContent(item)) {
+          return `[Tool Call: ${item.toolCall.function.name}]`;
+        }
+        return '';
+      })
+      .join('\n');
+  }
+  if (isToolCallContent(content)) {
+    return `[Tool Call: ${content.toolCall.function.name}]`;
+  }
+  return '';
+}
+
+// SSE Types
+export interface SSEChunkData {
+  id?: string;
+  object?: string;
+  created?: number;
+  model?: string;
+  choices?: Array<{
+    index?: number;
+    delta?: {
+      role?: string;
+      content?: string;
+      reasoning_content?: string;
+    };
+    finish_reason?: string | null;
+  }>;
+}
+
+// AGUI Adapter Types
+export interface AGUIAdapter {
+  transformRequest?: (params: ChatRequestParams) => any;
+  transformResponse?: (chunk: SSEChunkData) => { content?: string; reasoning?: string };
 }

@@ -4,9 +4,27 @@ import { TdChatProps } from '../types';
 import { PropType } from 'vue';
 
 export default {
-  /** 自定义操作按钮的插槽 */
+  /** 自定义操作按钮的插槽 @deprecated */
   actions: {
     type: Function as PropType<TdChatProps['actions']>,
+  },
+  /** 自定义操作按钮的插槽（推荐使用） */
+  actionbar: {
+    type: Function as PropType<TdChatProps['actionbar']>,
+  },
+  /** 是否开启自动滚动 */
+  autoScroll: {
+    type: Boolean,
+    default: true,
+  },
+  /** 默认滚动位置 */
+  defaultScrollTo: {
+    type: String as PropType<TdChatProps['defaultScrollTo']>,
+    default: 'bottom' as TdChatProps['defaultScrollTo'],
+    validator(val: TdChatProps['defaultScrollTo']): boolean {
+      if (!val) return true;
+      return ['top', 'bottom'].includes(val);
+    },
   },
   /** 动画效果，支持「渐变加载动画」,「闪烁加载动画」, 「骨架屏」三种 */
   animation: {
@@ -59,6 +77,11 @@ export default {
   },
   /** 是否表现为倒序 */
   reverse: {
+    type: Boolean,
+    default: true,
+  },
+  /** 是否显示"回到底部"按钮 */
+  showScrollButton: {
     type: Boolean,
     default: true,
   },

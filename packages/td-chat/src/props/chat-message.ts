@@ -42,6 +42,11 @@ export default {
     type: [String, Object, Boolean] as PropType<TdChatItemProps['reasoning']>,
     default: false as TdChatItemProps['reasoning'],
   },
+  /** 推理加载状态 */
+  reasoningLoading: {
+    type: Boolean,
+    default: false,
+  },
   /** 角色，不同选项配置不同的样式，支持类型包括用户、助手、错误、模型切换、系统消息 */
   role: {
     type: String as PropType<TdChatItemProps['role']>,
@@ -77,10 +82,5 @@ export default {
       if (!val) return true;
       return ['left', 'right', 'center'].includes(val);
     },
-  },
-  /** 推理加载状态 */
-  reasoningLoading: {
-    type: Boolean,
-    default: false,
   },
 };

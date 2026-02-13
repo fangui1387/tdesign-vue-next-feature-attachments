@@ -1,7 +1,7 @@
 <template>
   <div :class="`${COMPONENT_NAME}__actions`">
     <t-space>
-      <template v-for="btnKey in operationBtn">
+      <template v-for="btnKey in currentActionBar">
         <!-- 重新生成按钮 -->
         <div v-if="btnKey === 'replay'" :key="btnKey" :class="`${COMPONENT_NAME}__refresh`">
           <t-tooltip :content="refreshTipText">
@@ -26,17 +26,28 @@
           </t-button>
         </t-tooltip>
 
+        <!-- 分享按钮 -->
+        <t-tooltip v-if="btnKey === 'share'" :key="btnKey" :content="shareTipText">
+          <t-button
+            theme="default"
+            size="small"
+            :disabled="disabled"
+            @click="handleClick($event, 'share')"
+          >
+            <t-icon-share />
+          </t-button>
+        </t-tooltip>
+
         <!-- 点赞按钮 -->
         <t-tooltip v-if="btnKey === 'good'" :key="btnKey" :content="likeTipText">
           <t-button
             theme="default"
             size="small"
-            :class="isGood && `${COMPONENT_NAME}-button--active`"
+            :class="isGoodActive && `${COMPONENT_NAME}-button--active`"
             :disabled="disabled"
             @click="handleClick($event, 'good')"
           >
-            <t-icon-thumb-up v-if="isGood" />
-            <t-icon-thumb-up v-else />
+            <t-icon-thumb-up />
           </t-button>
         </t-tooltip>
 
@@ -45,12 +56,11 @@
           <t-button
             theme="default"
             size="small"
-            :class="isBad && `${COMPONENT_NAME}-button--active`"
+            :class="isBadActive && `${COMPONENT_NAME}-button--active`"
             :disabled="disabled"
             @click="handleClick($event, 'bad')"
           >
-            <t-icon-thumb-down v-if="isBad" />
-            <t-icon-thumb-down v-else />
+            <t-icon-thumb-down />
           </t-button>
         </t-tooltip>
       </template>
@@ -66,6 +76,7 @@ import {
   ThumbDownIcon as TIconThumbDown,
   RefreshIcon as TIconRefresh,
   CopyIcon as TIconCopy,
+  ShareIcon as TIconShare,
 } from 'tdesign-icons-vue';
 import Clipboard from 'clipboard';
 import props from '../props/chat-action';
@@ -84,6 +95,7 @@ export default Vue.extend({
     TIconThumbDown,
     TIconRefresh,
     TIconCopy,
+    TIconShare,
   },
   props,
   data() {
@@ -110,11 +122,26 @@ export default Vue.extend({
     refreshTipText(): string {
       return (this as any).globalConfig.refreshTipText;
     },
+    shareTipText(): string {
+      return (this as any).globalConfig.shareTipText || '分享';
+    },
     contentValue(): string {
       const renderTNodeJSX = useTNodeJSX(this);
       const contentNode = renderTNodeJSX('content');
       if (typeof contentNode === 'string') return contentNode;
       return (this as any).content || '';
+    },
+    currentActionBar(): Array<'replay' | 'copy' | 'good' | 'bad' | 'share'> {
+      // 优先使用 actionBar，兼容 operationBtn
+      return (this as any).actionBar || (this as any).operationBtn || ['replay', 'copy', 'good', 'bad'];
+    },
+    isGoodActive(): boolean {
+      // 优先使用 comment，兼容 isGood
+      return (this as any).comment === 'good' || !!(this as any).isGood;
+    },
+    isBadActive(): boolean {
+      // 优先使用 comment，兼容 isBad
+      return (this as any).comment === 'bad' || !!(this as any).isBad;
     },
   },
   mounted() {
@@ -150,6 +177,12 @@ export default Vue.extend({
       (this as any).clipboard = clipboard;
     },
     handleClick(e: MouseEvent, type: string) {
+      // 触发新的事件名 onActions，兼容旧的 onOperation
+      this.$emit('actions', type, { e });
+      if (typeof (this as any).onActions === 'function') {
+        (this as any).onActions(type, { e });
+      }
+      // 兼容旧的事件名
       this.$emit('operation', type, { e });
       if (typeof (this as any).onOperation === 'function') {
         (this as any).onOperation(type, { e });
