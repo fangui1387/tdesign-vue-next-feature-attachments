@@ -1,11 +1,7 @@
 <template>
   <div style="margin-top: -18px; height: 408px; display: flex; flex-direction: column">
-    <t-chat
-      ref="listRef"
-      :clear-history="false"
-      layout="both"
-    >
-      <t-chat-item
+    <t-chat-list ref="listRef" :clear-history="false" layout="both">
+      <t-chat-message
         v-for="(message, idx) in messages"
         :key="message.id"
         v-bind="messageProps[message.role]"
@@ -16,45 +12,42 @@
         :reasoning="message.reasoning"
       >
         <template #content>
-           <!-- Content rendering logic -->
-           <template v-if="Array.isArray(message.content)">
-             <template v-for="(item, index) in message.content">
-               <template v-if="item.type === 'reasoning'">
-                 <div :key="`reasoning-${index}`" class="reasoning-wrapper">
-                    <!-- Reasoning rendering if needed, or ToolCalls -->
-                    <template v-for="(subItem, subIndex) in item.data">
-                       <div :key="`toolcall-${index}-${subIndex}`" class="toolcall-wrapper">
-                         <CustomToolCallRenderer
-                           v-if="subItem.type === 'toolcall'"
-                           :tool-call="subItem.data"
-                           :status="subItem.status"
-                         />
-                       </div>
-                    </template>
-                 </div>
-               </template>
-               <template v-else-if="item.type === 'text'">
-                  <div :key="`text-${index}`">{{ item.data }}</div>
-               </template>
-             </template>
-           </template>
-           <template v-else>
-             {{ message.content }}
-           </template>
+          <template v-if="Array.isArray(message.content)">
+            <template v-for="(item, index) in message.content">
+              <template v-if="item.type === 'reasoning'">
+                <div :key="`reasoning-${index}`" class="reasoning-wrapper">
+                  <template v-for="(subItem, subIndex) in item.data">
+                    <div :key="`toolcall-${index}-${subIndex}`" class="toolcall-wrapper">
+                      <CustomToolCallRenderer
+                        v-if="subItem.type === 'toolcall'"
+                        :tool-call="subItem.data"
+                        :status="subItem.status"
+                      />
+                    </div>
+                  </template>
+                </div>
+              </template>
+              <template v-else-if="item.type === 'text'">
+                <div :key="`text-${index}`">{{ item.data }}</div>
+              </template>
+            </template>
+          </template>
+          <template v-else>
+            {{ message.content }}
+          </template>
         </template>
 
-        <template #actions>
-          <t-chat-action
+        <template #actionbar>
+          <t-chat-actionbar
             v-if="isAIMessage(message) && message.status === 'complete'"
-            :operation-btn="getChatActionBar(idx === messages.length - 1)"
+            :action-bar="getChatActionBar(idx === messages.length - 1)"
             :content="getMessageContentForCopy(message)"
-            :is-good="message.comment === 'good'"
-            :is-bad="message.comment === 'bad'"
-            @operation="(name) => actionHandler(name, { message, idx })"
+            :comment="message.comment || ''"
+            @actions="(name) => actionHandler(name, { message, idx })"
           />
         </template>
-      </t-chat-item>
-    </t-chat>
+      </t-chat-message>
+    </t-chat-list>
 
     <t-chat-sender
       ref="inputRef"
@@ -66,7 +59,7 @@
       @stop="stopHandler"
     >
       <template #suffix="{ renderPresets }">
-         <RenderVNodes :vnodes="renderPresets ? renderPresets([]) : []" />
+        <RenderVNodes :vnodes="renderPresets ? renderPresets([]) : []" />
       </template>
     </t-chat-sender>
   </div>
@@ -79,28 +72,27 @@ import {
   getMessageContentForCopy,
   AGUIAdapter,
   useChat,
-  Chat as TChat,
-  ChatItem as TChatItem,
+  ChatList as TChatList,
+  ChatMessage as TChatMessage,
   ChatSender as TChatSender,
-  ChatAction as TChatAction,
+  ChatActionbar as TChatActionbar,
 } from '@jump-mp/td-chat';
 import { MessagePlugin } from 'tdesign-vue';
 import CustomToolCallRenderer from './components/Toolcall.vue';
 
-// Helper component to render VNodes
 const RenderVNodes = defineComponent({
   functional: true,
   props: ['vnodes'],
-  render: (h, ctx) => ctx.props.vnodes
+  render: (h: any, ctx: any) => ctx.props.vnodes,
 });
 
 export default defineComponent({
   name: 'Demo',
   components: {
-    TChat,
-    TChatItem,
+    TChatList,
+    TChatMessage,
     TChatSender,
-    TChatAction,
+    TChatActionbar,
     CustomToolCallRenderer,
     RenderVNodes,
   },
@@ -113,7 +105,7 @@ export default defineComponent({
     const { chatEngine, messages, status } = useChat({
       defaultMessages: [],
       chatServiceConfig: {
-        endpoint: `https://1257786608-9i9j1kpa67.ap-guangzhou.tencentscf.com/sse/agui-simple`,
+        endpoint: 'https://1257786608-9i9j1kpa67.ap-guangzhou.tencentscf.com/sse/agui-simple',
         protocol: 'agui',
         stream: true,
         onStart: (chunk: any) => {
@@ -148,11 +140,10 @@ export default defineComponent({
       return false;
     });
 
-    // Load history
     const loadHistoryMessages = async () => {
       loadingHistory.value = true;
       try {
-        const response = await fetch(`http://127.0.0.1:3000/api/conversation/history?type=simple`);
+        const response = await fetch('http://127.0.0.1:3000/api/conversation/history?type=simple');
         const result = await response.json();
         if (result.success && result.data) {
           const newMessages = AGUIAdapter.convertHistoryMessages(result.data);
@@ -192,7 +183,7 @@ export default defineComponent({
     } as any;
 
     const getChatActionBar = (isLast: boolean) => {
-      let filterActions = ['replay', 'good', 'bad', 'copy'];
+      let filterActions: Array<'replay' | 'good' | 'bad' | 'copy'> = ['replay', 'good', 'bad', 'copy'];
       if (!isLast) {
         filterActions = filterActions.filter((item) => item !== 'replay');
       }
