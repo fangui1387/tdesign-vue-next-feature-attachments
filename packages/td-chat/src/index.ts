@@ -51,22 +51,25 @@ export const version = '1.0.0';
 
 export default {
   install(Vue: typeof import('vue'), config?: Record<string, unknown>) {
-    Vue.use(Chat as any, config);
-    Vue.use(ChatItem as any, config);
-    Vue.use(ChatInput as any, config);
+    // 与 pro-components 保持一致的注册顺序
+    Vue.use(Chatbot as any, config);
+    Vue.use(ChatList as any, config);
     Vue.use(ChatContent as any, config);
-    Vue.use(ChatReasoning as any, config);
-    Vue.use(ChatAction as any, config);
+    Vue.use(ChatMarkdown as any, config);
+    Vue.use(ChatActionbar as any, config);
     Vue.use(ChatLoading as any, config);
     Vue.use(ChatSender as any, config);
-    Vue.use(ChatMessage as any, config);
-    Vue.use(ChatMarkdown as any, config);
-    Vue.use(Chatbot as any, config);
-    Vue.use(Attachments as any, config);
     Vue.use(ChatThinking as any, config);
+    Vue.use(ChatMessage as any, config);
+    Vue.use(Attachments as any, config);
     Vue.use(ChatSearchContent as any, config);
     Vue.use(ChatSuggestionContent as any, config);
-    Vue.use(ToolCallRenderer as any, config);
+    Vue.use(ChatInput as any, config);
+    Vue.use(ChatItem as any, config);
+    Vue.use(ChatReasoning as any, config);
+    // 注册组件别名（与 pro-components 一致）
+    Vue.component('TChat', Chat as any);
+    Vue.component('TChatAction', ChatAction as any);
   },
   version,
 };
