@@ -16,20 +16,7 @@ import _ChatSuggestionContent from './components/chat-suggestion-content.vue';
 import _ToolCallRenderer from './components/toolcall-renderer.vue';
 
 import { withInstall } from './utils';
-
-import {
-  TdChatProps,
-  TdChatItemProps,
-  TdChatContentProps,
-  TdChatActionProps,
-  TdChatInputProps,
-  TdChatSenderProps,
-  TdChatReasoningProps,
-  TdChatLoadingProps,
-  ChatMessagesData,
-  ChatServiceConfig,
-  ChatRequestParams,
-} from './types';
+import { useChat } from './composables/useChat';
 
 import './style';
 
@@ -37,15 +24,7 @@ export * from './types';
 export * from './utils';
 export * from './utils/adapter';
 export { ChatEngine, agentToolcallRegistry, stateManager } from './chat-engine';
-
-export type ChatProps = TdChatProps;
-export type ChatItemProps = TdChatItemProps;
-export type ChatContentProps = TdChatContentProps;
-export type ChatActionProps = TdChatActionProps;
-export type ChatInputProps = TdChatInputProps;
-export type ChatSenderProps = TdChatSenderProps;
-export type ChatReasoningProps = TdChatReasoningProps;
-export type ChatLoadingProps = TdChatLoadingProps;
+export { useChat };
 
 export const Chat = withInstall(_Chat);
 export const ChatItem = withInstall(_ChatItem);
@@ -67,13 +46,6 @@ export const ToolCallRenderer = withInstall(_ToolCallRenderer, 't-toolcall-rende
 // 兼容 pro-components 的命名
 export const ChatList = Chat;
 export const ChatActionbar = ChatAction;
-
-// 导出工具函数
-export {
-  isAIMessage,
-  isToolCallContent,
-  getMessageContentForCopy,
-} from './types';
 
 export const version = '1.0.0';
 

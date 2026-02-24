@@ -54,6 +54,10 @@ export interface TdChatProps {
    */
   data?: Array<TdChatItemMeta>;
   /**
+   * 默认消息列表
+   */
+  defaultMessages?: Array<ChatMessagesData>;
+  /**
    * 自定义每个对话单元的时间
    */
   datetime?: TNode<{ item: TdChatItemProps; index: number }>;
@@ -355,7 +359,7 @@ export interface TdChatSenderProps {
    * 发送按钮是否处于加载状态
    * @default false
    */
-  loading: boolean;
+  loading?: boolean;
   /**
    * 输入框右下角区域扩展
    */
@@ -498,6 +502,8 @@ export interface UploadActionConfig {
 }
 
 // Chat Engine Types
+export type ChatStatus = 'idle' | 'pending' | 'streaming' | 'complete' | 'error';
+
 export interface ChatRequestParams {
   prompt: string;
   [key: string]: any;
@@ -507,7 +513,7 @@ export interface ChatMessagesData {
   id: string | number;
   role: string;
   content: any;
-  status?: 'pending' | 'loading' | 'streaming' | 'complete' | 'error';
+  status?: ChatStatus;
   reasoning?: string;
   [key: string]: any;
 }
@@ -522,11 +528,15 @@ export interface ChatServiceConfig {
 }
 
 export interface ChatEngine {
-  setMessages: (newMessages: ChatMessagesData[]) => void;
+  init: (config: ChatServiceConfig, defaultMessages?: ChatMessagesData[]) => void;
+  setMessages: (newMessages: ChatMessagesData[], mode?: 'append' | 'replace') => void;
   clearMessages: () => void;
   sendUserMessage: (params: ChatRequestParams) => Promise<void>;
   regenerateAIMessage: () => void;
   abortChat: () => void;
+  subscribe: (listener: (messages: ChatMessagesData[], status: ChatStatus) => void) => () => void;
+  getMessages: () => ChatMessagesData[];
+  getStatus: () => ChatStatus;
 }
 
 export interface TdChatMessageConfig {
@@ -541,6 +551,13 @@ export interface TdChatMessageConfig {
 
 export type TdChatActionsName = 'replay' | 'copy' | 'good' | 'bad' | 'share';
 
+export interface TdChatListProps extends TdChatProps {
+  /**
+   * 消息配置
+   */
+  messageProps?: TdChatMessageConfig;
+}
+
 export interface TdChatListApi {
   scrollToBottom: (params?: ScrollToBottomParams) => void;
 }
@@ -548,6 +565,82 @@ export interface TdChatListApi {
 export interface TdChatSenderApi {
   focus: () => void;
   blur: () => void;
+}
+
+// Chatbot Types
+export interface TdChatbotProps {
+  /** 动画效果 */
+  animation?: 'skeleton' | 'moving' | 'gradient';
+  /** 对话布局 */
+  layout?: 'both' | 'single';
+  /** 是否倒序 */
+  reverse?: boolean;
+  /** 是否自动滚动 */
+  autoScroll?: boolean;
+  /** 默认滚动位置 */
+  defaultScrollTo?: 'top' | 'bottom';
+  /** 是否显示滚动按钮 */
+  showScrollButton?: boolean;
+  /** 输入框占位符 */
+  placeholder?: string;
+  /** 初始消息 */
+  initialMessages?: ChatMessagesData[];
+  /** 默认消息 */
+  defaultMessages?: ChatMessagesData[];
+  /** 服务配置 */
+  serviceConfig?: ChatServiceConfig;
+  /** 发送器前置内容 */
+  footerPrefix?: string | TNode;
+  /** 发送器后置内容 */
+  suffix?: string | TNode;
+  /** Textarea 属性 */
+  textareaProps?: TextareaProps;
+  /** 附件属性 */
+  attachmentsProps?: {
+    items: any[];
+    overflow: 'scrollX' | 'scrollY' | 'wrap';
+  };
+  /** 消息配置 */
+  messageProps?: TdChatMessageConfig;
+}
+
+export interface TdChatbotApi {
+  addPrompt: (prompt: string) => void;
+  regenerate: () => void;
+  selectFile: () => void;
+  registerMergeStrategy: (strategy: any) => void;
+  setMessages: (messages: ChatMessagesData[]) => void;
+  clearMessages: () => void;
+  sendUserMessage: (params: ChatRequestParams) => Promise<void>;
+  sendAIMessage: (content: string) => void;
+  sendSystemMessage: (content: string) => void;
+  abortChat: () => void;
+  scrollList: (params?: ScrollToBottomParams) => void;
+}
+
+// Search Content Types
+export interface TdChatSearchContentProps {
+  /** 搜索标题 */
+  title?: string;
+  /** 搜索项目列表 */
+  items?: Array<{
+    title: string;
+    description?: string;
+    url?: string;
+    [key: string]: any;
+  }>;
+}
+
+// Suggestion Content Types
+export interface TdChatSuggestionContentProps {
+  /** 建议标题 */
+  title?: string;
+  /** 建议项目列表 */
+  items?: Array<string | {
+    text: string;
+    value?: string;
+    [key: string]: any;
+  }>;
 }
 
 // ToolCall Types
@@ -623,4 +716,50 @@ export interface SSEChunkData {
 export interface AGUIAdapter {
   transformRequest?: (params: ChatRequestParams) => any;
   transformResponse?: (chunk: SSEChunkData) => { content?: string; reasoning?: string };
+}
+
+// FileCard Types
+export interface TdFileCardProps {
+  /** 文件名 */
+  name?: string;
+  /** 文件URL */
+  url?: string;
+  /** 文件大小 */
+  size?: number;
+  /** 文件类型 */
+  type?: string;
+  /** 文件状态 */
+  status?: 'success' | 'error' | 'pending';
+  /** 进度 */
+  percent?: number;
+  /** 是否显示删除按钮 */
+  removable?: boolean;
+  /** 点击删除按钮回调 */
+  onRemove?: (file: TdFileCardProps) => void;
+}
+
+// Attachments Types
+export interface TdAttachmentsProps {
+  /** 附件列表 */
+  items?: Array<TdFileCardProps>;
+  /** 溢出布局方式 */
+  overflow?: 'scrollX' | 'scrollY' | 'wrap';
+}
+
+// Chat Thinking Types
+export interface TdChatThinkingProps {
+  /** 是否处于加载状态 */
+  loading?: boolean;
+  /** 标题文本 */
+  title?: string;
+  /** 完成后的标题 */
+  completeTitle?: string;
+  /** 样式变体 */
+  variant?: 'default' | 'compact';
+}
+
+// Chat Message Types
+export interface TdChatMessageProps extends TdChatItemProps {
+  /** 消息配置 */
+  messageConfig?: TdChatMessageConfig;
 }
